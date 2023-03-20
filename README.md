@@ -6,3 +6,5 @@ ApAr is a decision-analytic utility-based approach to evaluating predictive mode
 This repository hosts the code to replicate the Applicability Area approach to ML model evaluation. 
 - Key functions are in the src/ApplicabilityArea_ApAr.py
 - We also showcase an example using the Pima Indians Diabetes dataset
+
+Additional simulations and examples will be added.
