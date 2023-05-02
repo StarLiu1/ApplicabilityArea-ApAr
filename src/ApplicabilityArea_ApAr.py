@@ -106,7 +106,8 @@ def priorFiller(priorList, lower: bool):
             if((index > midPoint) & (lenList > 1)):
                 if(item == -999):
                     priorList[index] = 0
-
+    return priorList
+                    
 def priorModifier(priorList):
     """
     some priors are not defined. For those -999, change to 1 or 0 depending on pL or pU
@@ -128,44 +129,72 @@ def priorModifier(priorList):
         if(index == lenList -1):
             if((priorList[index - 1] != 0) & (priorList[index] == 0)):
                 priorList[index] = priorList[index - 1]
+    return priorList
+
+def extractThresholds(row):
+    """
+    Forgot to save the thresholds as a single column. 
+    Thus, this extracts the thresholds and adjusts those outside the [0,1] range.
+    """
+    thresholds = row['thresholds']
+    for i, cutoff in enumerate(thresholds):
+        if(cutoff > 1):
+            thresholds[i] = 1
+    return thresholds
+
+def adjustpLpUClassificationThreshold(thresholds, pLs, pUs):
+    pLs = priorFiller(pLs, True)
+    pLs = priorModifier(pLs)
+    pUs = priorFiller(pUs, False)
+    pUs = priorModifier(pUs)
+    thresholds = np.array(thresholds)
+    thresholds = np.where(thresholds > 1, 1, thresholds)
+    if thresholds[-1] == 0:
+        thresholds[-1] == 0.0001
+        thresholds = np.append(thresholds, 0)
+        pLs[0] = pLs[1]
+        pUs[0] = pUs[1]
+        pLs = np.append([0], pLs)
+        pUs = np.append([0], pUs)
+    thresholds = thresholds[::-1]
+    return [thresholds, pLs, pUs]
 
 def applicableArea(modelRow, thresholds, utils, p):
     uTN, uTP, uFN, uFP, u = utils
-    #calculate pLs, pStars, and pUs
-#     print(modelRow)
-    uFP = uTN - (uTP - uFN) * (1/modelRow['costRatio'])
-    pLs, pStars, pUs = modelPriorsOverRoc(modelRow, uTN, uTP, uFN, uFP, u)
-    #extract thresholds
-    thresholds = np.array(thresholds)
-    thresholds = np.where(thresholds > 1, 1, thresholds)
-    #fill in undefined priors
-    priorFiller(pLs, True)
-    priorModifier(pLs)
-    priorFiller(pUs, False)
-    priorModifier(pUs)
     area = 0
     largestRangePrior = 0
     largestRangePriorThresholdIndex = -999
     withinRange = False
+    priorDistributionArray = []
     leastViable = 1
-#     if((pLs is None) == False):
-    for i, prior in enumerate(pLs): 
-        if(i < len(pLs) - 1):
-            if((pLs[i] < pUs[i]) | (pLs[i + 1] < pUs[i + 1])):
-                if((leastViable > pLs[i]) & (pLs[i] > 0)):
-                    leastViable = pLs[i]
-                ##check if input prior is within this range of priors
-                if((p > pLs[i]) & (p < pUs[i])):
-                    withinRange = True
-                ### To add
-                #first diff + second diff / 2 if the 2nd difference is still positive and its not the last one: trapezoidal rule
+    minPrior = 0
+    maxPrior = 0
+    meanPrior = 0
+    
+    #calculate pLs, pStars, and pUs
+    uFP = uTN - (uTP - uFN) * (1 / modelRow['costRatio'])
+    pLs, pStars, pUs = modelPriorsOverRoc(modelRow, uTN, uTP, uFN, uFP, u)
+    thresholds = np.array(thresholds)
+    thresholds = np.where(thresholds > 1, 1, thresholds)
+    thresholds, pLs, pUs = adjustpLpUClassificationThreshold(thresholds, pLs, pUs)
+    
+    for i, prior in enumerate(pLs):
+        if i < len(pLs) - 1:
+            if pLs[i] < pUs[i] or pLs[i + 1] < pUs[i + 1]:
                 rangePrior = pUs[i] - pLs[i]
-                if(rangePrior > largestRangePrior):
+                #incomplete: where pL and pU cross.
+                #incomplete: where pL and pU cross.
+                #incomplete: where pL and pU cross.
+                if rangePrior > largestRangePrior:
                     largestRangePrior = rangePrior
                     largestRangePriorThresholdIndex = i
-                avgRangePrior = (rangePrior + (pUs[i + 1] - pLs[i + 1])) / 2 #trapezoidal rule (upper + lower base)/2
-                area = area + abs(avgRangePrior) * abs(thresholds[i + 1] - thresholds[i])
+                avgRangePrior = (rangePrior + (pUs[i + 1] - pLs[i + 1])) / 2 # trapezoidal rule (upper + lower base)/2
+                area += abs(avgRangePrior) * abs(thresholds[i + 1] - thresholds[i])
                 area = np.round(area, 3)
+
     if(area > 1):
-        area = 1
+        area = 1           
+    if((p > minPrior) & (p < maxPrior)):
+        withinRange = True
+                
     return [area, largestRangePriorThresholdIndex, withinRange, leastViable, uFP]
