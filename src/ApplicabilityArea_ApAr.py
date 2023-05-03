@@ -67,6 +67,9 @@ def modelPriorsOverRoc(modelChosen, uTN, uTP, uFN, uFP, u):
     if(type(np.array(modelChosen['tpr'])) == list):
         tprArray = np.array(np.array(modelChosen['tpr'])[0])
         fprArray = np.array(np.array(modelChosen['fpr'])[0])
+    elif type(np.array(modelChosen['tpr'])[0]) == list:
+        tprArray = np.array(np.array(modelChosen['tpr'])[0])
+        fprArray = np.array(np.array(modelChosen['fpr'])[0])
     else:
         tprArray = np.array(modelChosen['tpr'])
         fprArray = np.array(modelChosen['fpr'])
@@ -230,7 +233,7 @@ def applicableArea(modelRow, thresholds, utils, p):
                     avgRangePrior = (0 + (pUs[i] - pLs[i])) / 2 # trapezoidal rule (upper + lower base)/2
                     area += abs(avgRangePrior) * abs(xIntersect[0] - thresholds[i + 1])
                 
-    area = np.round(area, 3)
+    area = np.round(float(area), 3)
     if(area > 1):
         area = 1           
     if((p > minPrior) & (p < maxPrior)):
