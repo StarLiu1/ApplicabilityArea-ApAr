@@ -202,31 +202,33 @@ def applicableArea(modelRow, thresholds, utils, p):
                 #incomplete: where pL and pU cross.
                 x0 = thresholds[i]
                 x1 = thresholds[i+1]
-                pL0 = pLs[i]
-                pL1 = pLs[i+1]
-                pU0 = pUs[i]
-                pU1 = pUs[i+1]
-                x = sy.symbols('x')
-                xIntersect = sy.solve(eqLine(x, x0, x1, pL0, pL1) - eqLine(x, x0, x1, pU0, pU1), x)
-                yIntersect = eqLine(xIntersect[0], x0, x1, pL0, pL1)
-                avgRangePrior = (0 + (pUs[i + 1] - pLs[i + 1])) / 2 # trapezoidal rule (upper + lower base)/2
-                area += abs(avgRangePrior) * abs(thresholds[i + 1] - xIntersect[0])
+                if x0 != x1:
+                    pL0 = pLs[i]
+                    pL1 = pLs[i+1]
+                    pU0 = pUs[i]
+                    pU1 = pUs[i+1]
+                    x = sy.symbols('x')
+                    xIntersect = sy.solve(eqLine(x, x0, x1, pL0, pL1) - eqLine(x, x0, x1, pU0, pU1), x)
+                    yIntersect = eqLine(xIntersect[0], x0, x1, pL0, pL1)
+                    avgRangePrior = (0 + (pUs[i + 1] - pLs[i + 1])) / 2 # trapezoidal rule (upper + lower base)/2
+                    area += abs(avgRangePrior) * abs(thresholds[i + 1] - xIntersect[0])
                 
             elif (pLs[i] < pUs[i] and pLs[i + 1] > pUs[i + 1]):
                 #incomplete: where pL and pU cross.
                 x0 = thresholds[i]
                 x1 = thresholds[i+1]
-                pL0 = pLs[i]
-                pL1 = pLs[i+1]
-                pU0 = pUs[i]
-                pU1 = pUs[i+1]
-                x = sy.symbols('x')
-                xIntersect = sy.solve(eqLine(x, x0, x1, pL0, pL1) - eqLine(x, x0, x1, pU0, pU1), x)
-                if len(xIntersect) == 0:
-                    xIntersect = [0]
-                yIntersect = eqLine(xIntersect[0], x0, x1, pL0, pL1)
-                avgRangePrior = (0 + (pUs[i] - pLs[i])) / 2 # trapezoidal rule (upper + lower base)/2
-                area += abs(avgRangePrior) * abs(xIntersect[0] - thresholds[i + 1])
+                if x0 != x1:
+                    pL0 = pLs[i]
+                    pL1 = pLs[i+1]
+                    pU0 = pUs[i]
+                    pU1 = pUs[i+1]
+                    x = sy.symbols('x')
+                    xIntersect = sy.solve(eqLine(x, x0, x1, pL0, pL1) - eqLine(x, x0, x1, pU0, pU1), x)
+                    if len(xIntersect) == 0:
+                        xIntersect = [0]
+                    yIntersect = eqLine(xIntersect[0], x0, x1, pL0, pL1)
+                    avgRangePrior = (0 + (pUs[i] - pLs[i])) / 2 # trapezoidal rule (upper + lower base)/2
+                    area += abs(avgRangePrior) * abs(xIntersect[0] - thresholds[i + 1])
                 
     area = np.round(area, 3)
     if(area > 1):
