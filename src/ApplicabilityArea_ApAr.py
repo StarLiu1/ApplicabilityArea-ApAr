@@ -131,9 +131,12 @@ def modelPriorsOverRoc(modelChosen, uTN, uTP, uFN, uFP, u):
     elif type(np.array(modelChosen['tpr'])[0]) == list:
         tprArray = np.array(np.array(modelChosen['tpr'])[0])
         fprArray = np.array(np.array(modelChosen['fpr'])[0])
-    else:
+    elif (np.array(modelChosen['tpr'])).size > 1:
         tprArray = np.array(modelChosen['tpr'])
         fprArray = np.array(modelChosen['fpr'])
+    else:
+        tprArray = np.array(modelChosen['tpr'])[0]
+        fprArray = np.array(modelChosen['fpr'])[0]
         
     #for each pair of tpr, fpr
     if(tprArray.size > 1):
