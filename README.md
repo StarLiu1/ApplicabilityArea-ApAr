@@ -1,7 +1,7 @@
 # ApplicabilityArea-ApAr
 ### Star Liu, Shixiong Wei, Harold P. Lehmann
 
-PubMed: [https://www.medrxiv.org/content/10.1101/2023.07.06.23292124v4](https://pubmed.ncbi.nlm.nih.gov/38222359/)
+PubMed: [https://pubmed.ncbi.nlm.nih.gov/38222359/](https://pubmed.ncbi.nlm.nih.gov/38222359/)
 Paper accepted by AMIA 2023
 
 ApAr is a decision-analytic utility-based approach to evaluating predictive models that communicates the range of prior probability and test cutoffs for which the model has positive utility. 
